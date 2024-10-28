@@ -1,4 +1,5 @@
 import com.x3t.gradle.plugins.openapi.OpenapiDiffPluginTask
+import info.solidsoft.gradle.pitest.PitestPluginExtension
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -7,8 +8,8 @@ plugins {
     id("org.springframework.boot") version "3.1.3"
     id("io.spring.dependency-management") version "1.1.3"
     id("jacoco")
-    id("io.gitlab.arturbosch.detekt") version("1.23.1")
-    kotlin("jvm") version "1.9.0"
+    id("io.gitlab.arturbosch.detekt") version ("1.23.1")
+    kotlin("jvm") version "2.0.10"
     kotlin("plugin.spring") version "1.8.22"
     id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
     id("com.x3t.gradle.plugins.openapi.openapi_diff") version "1.0"
@@ -32,20 +33,35 @@ configurations {
     }
 }
 
-sourceSets {
-    create("testIntegration") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-
-    create("testArchitecture") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-
-    create("testComponent") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
+testing {
+    suites {
+        val testIntegration by registering(JvmTestSuite::class) {
+            sources {
+                kotlin {
+                    setSrcDirs(listOf("src/testIntegration/kotlin"))
+                }
+                compileClasspath += sourceSets.main.get().output
+                runtimeClasspath += sourceSets.main.get().output
+            }
+        }
+        val testArchitecture by registering(JvmTestSuite::class) {
+            sources {
+                kotlin {
+                    setSrcDirs(listOf("src/testArchitecture/kotlin"))
+                }
+                compileClasspath += sourceSets.main.get().output
+                runtimeClasspath += sourceSets.main.get().output
+            }
+        }
+        val testComponent by registering(JvmTestSuite::class) {
+            sources {
+                kotlin {
+                    setSrcDirs(listOf("src/testComponent/kotlin"))
+                }
+                compileClasspath += sourceSets.main.get().output
+                runtimeClasspath += sourceSets.main.get().output
+            }
+        }
     }
 }
 
@@ -65,7 +81,6 @@ val testComponentImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.implementation.get())
 }
 
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -74,26 +89,29 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-common:2.1.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation("io.mockk:mockk:1.13.8")
-    testImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
+    testImplementation("io.kotest.extensions:kotest-extensions-pitest:1.2.0")
 
     testIntegrationImplementation("io.mockk:mockk:1.13.8")
-    testIntegrationImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
+    testIntegrationImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testIntegrationImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testIntegrationImplementation("com.ninja-squad:springmockk:4.0.2")
     testIntegrationImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")
     }
     testIntegrationImplementation("org.testcontainers:postgresql:1.19.1")
-    testIntegrationImplementation("org.testcontainers:junit-jupiter:1.19.1")
     testIntegrationImplementation("org.testcontainers:jdbc-test:1.12.0")
     testIntegrationImplementation("org.testcontainers:testcontainers:1.19.1")
     testIntegrationImplementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
+    testIntegrationImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
+    testIntegrationImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
+    testIntegrationImplementation("io.kotest.extensions:kotest-extensions-pitest:1.2.0")
 
     testArchitectureImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testArchitectureImplementation("com.tngtech.archunit:archunit-junit5:1.0.1")
-
 
     testComponentImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testComponentImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -106,9 +124,9 @@ dependencies {
     testComponentImplementation("io.rest-assured:rest-assured:5.3.2")
     testComponentImplementation("org.junit.platform:junit-platform-suite:1.10.0")
     testComponentImplementation("org.testcontainers:postgresql:1.19.1")
-    testComponentImplementation("org.testcontainers:junit-jupiter:1.19.1")
     testComponentImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
-    testComponentImplementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
 }
 
 tasks.withType<KotlinCompile> {
@@ -122,12 +140,6 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-task<Test>("testIntegration") {
-    useJUnitPlatform()
-    testClassesDirs = sourceSets["testIntegration"].output.classesDirs
-    classpath = sourceSets["testIntegration"].runtimeClasspath
-}
-
 tasks.register<JacocoReport>("jacocoFullReport") {
     executionData(tasks.named("test").get(), tasks.named("testIntegration").get(), tasks.named("testComponent").get())
     sourceSets(sourceSets["main"])
@@ -138,20 +150,8 @@ tasks.register<JacocoReport>("jacocoFullReport") {
     }
 }
 
-task<Test>("testArchitecture") {
-    useJUnitPlatform()
-    testClassesDirs = sourceSets["testArchitecture"].output.classesDirs
-    classpath = sourceSets["testArchitecture"].runtimeClasspath
-}
-
-task<Test>("testComponent") {
-    useJUnitPlatform()
-    testClassesDirs = sourceSets["testComponent"].output.classesDirs
-    classpath = sourceSets["testComponent"].runtimeClasspath
-}
-
 detekt {
-    toolVersion = "1.23.1"
+    toolVersion = "1.23.7"
     config.setFrom("$projectDir/config/detekt.yml")
     buildUponDefaultConfig = true
     allRules = false
@@ -168,6 +168,10 @@ tasks.withType<Detekt>().configureEach {
         sarif.required.set(true)
         md.required.set(true)
     }
+}
+
+configure<PitestPluginExtension> {
+    targetClasses.set(listOf("com.jicay.bookmanagement.*"))
 }
 
 pitest {

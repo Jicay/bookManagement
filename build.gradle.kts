@@ -9,7 +9,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
     id("jacoco")
     id("io.gitlab.arturbosch.detekt") version ("1.23.1")
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.21"
     kotlin("plugin.spring") version "1.8.22"
     id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
     id("com.x3t.gradle.plugins.openapi.openapi_diff") version "1.0"

@@ -118,7 +118,7 @@ dependencies {
         exclude(module = "mockito-core")
     }
     testComponentImplementation("io.cucumber:cucumber-java:7.14.0")
-    testComponentImplementation("io.cucumber:cucumber-spring:7.14.0")
+    testComponentImplementation("io.cucumber:cucumber-spring:7.20.1")
     testComponentImplementation("io.cucumber:cucumber-junit:7.14.0")
     testComponentImplementation("io.cucumber:cucumber-junit-platform-engine:7.14.0")
     testComponentImplementation("io.rest-assured:rest-assured:5.3.2")

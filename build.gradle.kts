@@ -86,7 +86,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.liquibase:liquibase-core")
     implementation("org.postgresql:postgresql")
-    implementation("org.springdoc:springdoc-openapi-starter-common:2.1.0")
+    implementation("org.springdoc:springdoc-openapi-starter-common:2.6.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
     testImplementation("io.mockk:mockk:1.13.8")
